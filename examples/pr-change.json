@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "title": "幂等提交 · PR 变更导览",
+  "subtitle": "虚构 PR 示意 · 为重复提交增加请求键与结果重放，未连接任何真实仓库",
+  "project": "checkout-demo（虚构示意）",
+  "scenario": "S4",
+  "stats": [
+    {
+      "label": "新增组件",
+      "value": "1"
+    },
+    {
+      "label": "调整组件",
+      "value": "2"
+    },
+    {
+      "label": "导览站",
+      "value": "6"
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "overview",
+      "title": "变更全景",
+      "source": "flowchart LR\n  API[\"SubmitController\"] --> Service[\"CheckoutService\"]\n  Service --> Guard[\"IdempotencyStore\"]\n  Guard --> DB[(\"MySQL\")]\n  Service --> Repo[\"OrderRepository\"]\n  Repo --> DB\n  Guard -->|已成功且摘要相同| Cache[\"CachedResult\"]\n  Guard -->|键相同但摘要不同| Conflict[\"ConflictError\"]\n  Cache --> API\n  Conflict --> API\n  classDef core fill:#e6f6ec,stroke:#17a45f,color:#0b5c3a\n  classDef reused fill:#f1f3f6,stroke:#9aa3af,color:#4b5563,stroke-dasharray:5 3\n  classDef external fill:#eaf1fe,stroke:#3574f0,color:#164494\n  classDef warning fill:#fff4e0,stroke:#e6a23c,color:#7c4a06\n  classDef error fill:#fdecec,stroke:#e5484d,color:#8f2028\n  class API,Service warning\n  class Guard core\n  class Repo reused\n  class DB external\n  class Cache warning\n  class Conflict error"
+    },
+    {
+      "id": "sequence",
+      "title": "提交时序",
+      "source": "sequenceDiagram\n  autonumber\n  participant API as SubmitController\n  participant Service as CheckoutService\n  participant Guard as IdempotencyStore\n  participant Repo as OrderRepository\n  participant DB as MySQL\n  participant Cache as CachedResult\n  participant Conflict as ConflictError\n  API->>Service: submit(key, payload)\n  Service->>Guard: claim(key, payloadDigest)\n  Guard->>DB: 读取或占用请求键\n  DB-->>Guard: 当前状态\n  alt 首次请求\n    Guard-->>Service: claimed\n    Service->>Repo: createOrder(payload)\n    Repo->>DB: 事务写入订单与成功结果\n    DB-->>Repo: committed\n    Repo-->>Service: result\n    Service-->>API: 首次结果\n  else 已成功且摘要相同\n    Guard->>Cache: loadResult()\n    Cache-->>Service: 既有结果\n    Service-->>API: 重放结果\n  else 键相同但摘要不同\n    Guard->>Conflict: reject()\n    Conflict-->>API: 冲突响应\n  end"
+    }
+  ],
+  "tree": [
+    {
+      "id": "project",
+      "name": "checkout-demo（虚构示意）",
+      "kind": "module",
+      "children": [
+        {
+          "id": "api-package",
+          "name": "接口与应用",
+          "kind": "package",
+          "children": [
+            {
+              "id": "submit",
+              "name": "SubmitController",
+              "kind": "class",
+              "status": "modified",
+              "docId": "submit-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "API",
+                  "label": "SubmitController"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "API",
+                  "label": "SubmitController"
+                }
+              ]
+            },
+            {
+              "id": "checkout",
+              "name": "CheckoutService",
+              "kind": "class",
+              "status": "modified",
+              "docId": "checkout-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Service",
+                  "label": "CheckoutService"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Service",
+                  "label": "CheckoutService"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "idempotency-package",
+          "name": "幂等能力",
+          "kind": "package",
+          "children": [
+            {
+              "id": "guard",
+              "name": "IdempotencyStore",
+              "kind": "interface",
+              "status": "new",
+              "docId": "guard-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Guard",
+                  "label": "IdempotencyStore"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Guard",
+                  "label": "IdempotencyStore"
+                }
+              ]
+            },
+            {
+              "id": "cached",
+              "name": "CachedResult",
+              "kind": "class",
+              "status": "warning",
+              "docId": "cached-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Cache",
+                  "label": "CachedResult"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Cache",
+                  "label": "CachedResult"
+                }
+              ]
+            },
+            {
+              "id": "conflict",
+              "name": "ConflictError",
+              "kind": "class",
+              "status": "error",
+              "docId": "conflict-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Conflict",
+                  "label": "ConflictError"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Conflict",
+                  "label": "ConflictError"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "infra-package",
+          "name": "复用与外部依赖",
+          "kind": "package",
+          "children": [
+            {
+              "id": "repository",
+              "name": "OrderRepository",
+              "kind": "interface",
+              "status": "reused",
+              "docId": "repository-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Repo",
+                  "label": "OrderRepository"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Repo",
+                  "label": "OrderRepository"
+                }
+              ]
+            },
+            {
+              "id": "database",
+              "name": "MySQL",
+              "kind": "class",
+              "status": "external",
+              "docId": "database-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "DB",
+                  "label": "MySQL"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "DB",
+                  "label": "MySQL"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "docs": [
+    {
+      "id": "submit-doc",
+      "title": "SubmitController · 接口增加请求键",
+      "status": "modified",
+      "file": "示意：src/api/SubmitController.ts",
+      "summary": "为提交接口接收幂等键，明确重复请求与冲突请求的响应契约。",
+      "details": [
+        "这是虚构 PR，未提供真实 diff；统计仅描述示例中的计划组件。",
+        "橙色表示本例调整的既有组件。",
+        "评审时应核对请求键的作用域、格式约束和旧客户端兼容性。"
+      ]
+    },
+    {
+      "id": "checkout-doc",
+      "title": "CheckoutService · 统一提交分支",
+      "status": "modified",
+      "file": "示意：src/application/CheckoutService.ts",
+      "summary": "在创建订单之前占用请求键，按首次、重放和冲突三条路径执行。",
+      "details": [
+        "核心行为变化：相同键与相同有效载荷返回同一业务结果。",
+        "相同键但不同有效载荷应拒绝，避免错误重放。",
+        "处理中请求、失败重试和过期策略未在该简化时序中展开，需要在真实 PR 中核查。"
+      ]
+    },
+    {
+      "id": "guard-doc",
+      "title": "IdempotencyStore · 请求状态边界",
+      "status": "new",
+      "file": "示意：src/ports/IdempotencyStore.ts",
+      "summary": "维护作用域内请求键、载荷摘要、处理状态和成功结果。",
+      "details": [
+        "占用动作必须具备原子性，不能只先查后写。",
+        "用户或租户作用域应参与唯一约束，避免跨主体复用结果。",
+        "摘要规范化、过期与处理中状态需要由实际协议定义。"
+      ]
+    },
+    {
+      "id": "cached-doc",
+      "title": "CachedResult · 重放已有结果",
+      "status": "warning",
+      "file": "示意：src/idempotency/CachedResult.ts",
+      "summary": "命中已成功的同内容请求时，返回保存的业务结果。",
+      "details": [
+        "橙色表示重复提交的分支路径。",
+        "重放结果应符合当前响应契约，并保留必要的敏感字段边界。",
+        "验收示例：同一请求发送两次，只产生一个订单，两次返回相同订单编号。该结果尚未在真实服务中运行验证。"
+      ]
+    },
+    {
+      "id": "conflict-doc",
+      "title": "ConflictError · 拒绝键冲突",
+      "status": "error",
+      "file": "示意：src/idempotency/ConflictError.ts",
+      "summary": "请求键已绑定另一份载荷时，停止写入并返回冲突。",
+      "details": [
+        "拒绝路径不得再次创建订单。",
+        "具体 HTTP 状态码和业务错误码应以真实接口定义为准。",
+        "测试应覆盖相同键不同载荷，不能只覆盖相同请求的重放。"
+      ]
+    },
+    {
+      "id": "repository-doc",
+      "title": "OrderRepository · 复用订单持久化",
+      "status": "reused",
+      "file": "示意：src/domain/OrderRepository.ts",
+      "summary": "持久化订单并保存成功结果，确保结果重放的依据可靠。",
+      "details": [
+        "图中灰色表示复用组件，示例没有声称其真实实现无需变化。",
+        "示意时序假设订单与成功结果可以在同一数据库事务中提交。",
+        "如果真实存储跨系统，应重新设计一致性方案并在地图上标出差异。"
+      ]
+    },
+    {
+      "id": "database-doc",
+      "title": "MySQL · 约束与事务",
+      "status": "external",
+      "summary": "为请求键唯一性和订单结果的一致提交提供存储支持。",
+      "details": [
+        "需要明确请求键的唯一索引、事务隔离和清理策略。",
+        "真实 PR 应检查迁移脚本、老数据兼容性与回滚代价。",
+        "这张地图是讲解材料，不是已经通过并发验证的实现。"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "title": "1 · 变更意图",
+      "text": "这个虚构 PR 解决重复提交可能重复创建订单的问题。绿色是新增状态存储，橙色是接口/编排调整和重放分支。",
+      "diagram": "overview"
+    },
+    {
+      "title": "2 · 先看接口契约",
+      "text": "从 SubmitController 确认请求键从哪里来，以及重放与冲突怎样返回。实际评审还要核查旧客户端兼容性。",
+      "diagram": "overview",
+      "treeId": "submit"
+    },
+    {
+      "title": "3 · 原子占用请求键",
+      "text": "IdempotencyStore 区分首次请求、成功重放和冲突。重点看占用是否原子，以及键是否绑定用户或租户作用域。",
+      "diagram": "sequence",
+      "treeId": "guard"
+    },
+    {
+      "title": "4 · 首次请求创建订单",
+      "text": "CheckoutService 只让首次请求进入创建分支。此示例假设订单与成功结果在同一数据库事务中提交。",
+      "diagram": "sequence",
+      "treeId": "checkout"
+    },
+    {
+      "title": "5 · 重复请求重放",
+      "text": "CachedResult 返回既有结果，不再写入订单。验收应覆盖重复次数、响应一致性以及并发到达。",
+      "diagram": "sequence",
+      "treeId": "cached"
+    },
+    {
+      "title": "6 · 冲突与评审边界",
+      "text": "同一键的不同载荷应被拒绝。继续核查处理中状态、失败重试、过期与迁移；本示例不提供真实测试结果或合并结论。",
+      "diagram": "sequence",
+      "treeId": "conflict"
+    }
+  ]
+}

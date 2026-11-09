@@ -1,0 +1,4 @@
+interface:
+  display_name: "Coding Map · 代码地图"
+  short_description: "将源码、迭代与需求整理成可离线浏览的交互代码地图和分步导览"
+  default_prompt: "使用 $coding-map-skill，为当前项目的核心请求流程生成一张带工程树、三图联动和分步导览的代码地图。"

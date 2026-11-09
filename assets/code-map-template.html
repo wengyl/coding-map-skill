@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Code Map · 代码地图</title>
+  <style>
+    :root{--bg:#f3f5f9;--panel:#fff;--ink:#243249;--muted:#738097;--line:#e4e9f1;--accent:#168264;--accent-soft:#e8f6ee;--blue:#4675bf;--orange:#b67923;--red:#c74752;--radius:15px;--mono:"SFMono-Regular",Consolas,"Liberation Mono",monospace;--sans:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+    *{box-sizing:border-box} [hidden]{display:none!important}
+    body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 var(--sans)}
+    button,input{font:inherit} button{cursor:pointer}button:disabled{cursor:default;opacity:.4}button,input,summary{outline-offset:4px}
+    button{color:inherit}button:focus-visible,summary:focus-visible{outline:2px solid var(--accent)}
+    .page-header{padding:22px 28px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+    .brand-row,.header-main,.header-actions,.stats,.panel-heading,.tree-tools,.diagram-toolbar,.tabs,.zoom-tools,.tour-heading,.tour-controls,.doc-heading,.doc-meta,.canvas-caption{display:flex;align-items:center}
+    .brand-row{gap:10px;margin-bottom:14px;font-size:11px;letter-spacing:1.6px;font-weight:700;color:var(--muted)}
+    .brand-icon{width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:var(--ink);color:#fff;font-size:16px;letter-spacing:0}
+    .brand-name{color:var(--ink)} .brand-sep{width:1px;height:13px;background:var(--line);margin:0 2px}
+    #project{font:12px var(--mono);letter-spacing:0;overflow-wrap:anywhere}.scenario{margin-left:auto;border:1px solid #dce9e1;color:var(--accent);background:#f1f8f4;border-radius:20px;padding:3px 10px;letter-spacing:0;font-size:11px}
+    .header-main{justify-content:space-between;gap:24px}.title-group{min-width:0}h1{font-size:25px;font-weight:750;line-height:1.4;letter-spacing:-.6px;margin:0 0 5px}#subtitle{margin:0;color:var(--muted);font-size:13px;max-width:850px}
+    .header-actions{gap:20px;flex-shrink:0}.stats{gap:19px}.stat{min-width:48px}.stat-value{display:block;font-size:23px;line-height:1.25;font-weight:700;letter-spacing:-.6px}.stat-label{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+    .button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 12px;font-size:12px;line-height:1.5;white-space:nowrap}.button:hover:not(:disabled){background:#f4f7fa;border-color:#cdd6e2}.button-primary{background:var(--ink);color:#fff;border-color:var(--ink);padding:10px 16px}.button-primary:hover:not(:disabled){background:#344660;border-color:#344660}
+    .workspace{position:relative;display:grid;grid-template-columns:260px minmax(320px,1fr) 318px;gap:14px;height:calc(100dvh - 171px);min-height:580px;padding:18px 20px 20px;max-width:2400px;margin:auto}
+    .panel{min-width:0;min-height:0;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden;box-shadow:0 2px 6px #23314c03}
+    .panel-heading{justify-content:space-between;padding:16px 16px 10px;gap:8px}.eyebrow{font-size:10px;font-weight:750;letter-spacing:1.4px;color:var(--muted)}.panel-heading h2{font-size:14px;margin:1px 0 0;font-weight:700}.counter{font:11px var(--mono);color:var(--muted);background:#f3f5f8;padding:3px 7px;border-radius:6px}
+    .tree-panel,.docs-panel{display:flex;flex-direction:column}.search-wrap{position:relative;margin:3px 12px 9px}.search-icon{position:absolute;left:10px;top:5px;color:var(--muted);font-size:18px;pointer-events:none}#tree-search{width:100%;padding:8px 9px 8px 32px;border:1px solid var(--line);border-radius:8px;background:#f9fafc;font-size:12px;color:var(--ink)}#tree-search::placeholder{color:#9aa5b5}
+    .tree-tools{gap:6px;padding:0 13px 10px;border-bottom:1px solid var(--line)}.text-button{border:0;background:transparent;font-size:11px;color:var(--muted);padding:3px 4px;border-radius:4px}.text-button:hover{background:#edf3f7;color:var(--ink)}
+    .tree-scroll{overflow:auto;flex:1;padding:12px 8px;scrollbar-width:thin;scrollbar-color:#dbe1ea transparent}.tree-line{display:flex;align-items:center;min-height:34px;gap:1px}.tree-toggle{border:0;background:transparent;color:#8b97a9;padding:0;width:18px;height:27px;flex-shrink:0;font-size:12px}.tree-toggle.empty{visibility:hidden}.tree-toggle.open{transform:rotate(90deg)}.tree-row{position:relative;flex:1;min-width:0;display:flex;align-items:center;text-align:left;gap:7px;border:1px solid transparent;border-radius:6px;padding:5px 5px;background:transparent;font-size:11px;line-height:1.5}.tree-row:hover{background:#f3f6fa}.tree-row.is-active{background:var(--accent-soft);color:#176044;border-color:#cce9d8}.tree-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--mono)}.kind-icon{width:16px;height:16px;flex-shrink:0;display:grid;place-items:center;font:700 9px var(--sans);border:1px solid #b9d0ee;border-radius:50%;color:#4375b8;background:#eff5fd}.kind-icon.module,.kind-icon.package{border-radius:4px;border-color:#eed9a4;color:#ac812e;background:#fff8e7}.kind-icon.interface{border-color:#a3d4ba;background:#eef9f3;color:#2a8a59}.kind-icon.method{border-radius:5px;border-color:#d6c5ee;background:#f7f0fc;color:#9665c2}.status-dot{width:5px;height:5px;border-radius:50%;background:#9da9bb;margin-left:auto;flex-shrink:0}.status-new{--status-color:#219565}.status-modified,.status-warning{--status-color:#c58a2c}.status-reused{--status-color:#94a0b0}.status-external{--status-color:#4e7bc6}.status-error{--status-color:#d7555d}.status-dot{background:var(--status-color,#a0aabb)}
+    .tree-footer{padding:9px 13px;border-top:1px solid var(--line);font-size:10px;color:var(--muted);display:flex;gap:7px;align-items:center}.tiny-dot{width:5px;height:5px;background:var(--accent);border-radius:50%}.empty-message{color:var(--muted);font-size:12px;text-align:center;padding:24px 10px}
+    .diagram-panel{display:flex;flex-direction:column;position:relative}.diagram-toolbar{justify-content:space-between;gap:8px;padding:9px 12px 0;border-bottom:1px solid var(--line);min-height:52px}.tabs{gap:5px;align-self:stretch;min-width:0;overflow:auto}.tab{border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);padding:9px 12px 13px;white-space:nowrap;font-size:12px}.tab.is-active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}.tab:hover{color:var(--ink)}.tab-icon{margin-right:6px;opacity:.8}.zoom-tools{gap:3px;padding-bottom:8px}.zoom-button{border:1px solid var(--line);background:#fff;border-radius:6px;width:27px;height:27px;display:grid;place-items:center;font-size:17px;line-height:1}.zoom-button:hover{background:#f1f5f9}.zoom-label{font:10px var(--mono);color:var(--muted);width:38px;text-align:center}.zoom-fit{width:auto;padding:0 6px;font-size:11px}
+    .tour-rail{display:flex;align-items:center;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line);overflow:auto;flex-shrink:0;scrollbar-width:thin;background:#fcfdfc}.rail-caption{flex-shrink:0;font-size:10px;color:var(--muted);margin-right:3px;writing-mode:horizontal-tb}.tour-step{display:flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;border-radius:7px;font-size:10px;padding:4px 7px;white-space:nowrap;color:#6a788d}.tour-step:hover{background:#eff4f1}.tour-step.is-active{background:var(--accent-soft);color:#176044;border-color:#cce9d8}.step-number{width:17px;height:17px;border-radius:50%;background:#eaf0ec;color:#71827a;display:grid;place-items:center;font:10px var(--mono);flex-shrink:0}.tour-step.is-active .step-number{background:var(--accent);color:#fff}
+    .tour-panel{padding:14px 16px;background:#f0f8f3;border-bottom:1px solid #d9eade;flex-shrink:0}.tour-heading{justify-content:space-between;gap:10px}.tour-position{font:10px var(--mono);color:var(--accent);letter-spacing:.8px}#tour-close{margin-left:auto}.tour-panel h3{font-size:14px;margin:4px 0;color:#22583f}.tour-panel p{font-size:12px;color:#4d695a;margin:5px 0 10px;line-height:1.75;max-width:850px;white-space:pre-wrap}.tour-controls{gap:6px}.tour-controls button{background:#ffffff90;border-color:#cfe3d4}.tour-controls .keyboard-note{font-size:10px;color:#82958a;margin-left:auto}
+    .map-viewport{position:relative;flex:1;min-height:180px;overflow:auto;scrollbar-width:thin;background-color:#fbfcfe;background-image:radial-gradient(#d9e1eb .6px,transparent .6px);background-size:18px 18px}.diagram-wrap{min-width:100%;min-height:100%;width:max-content;padding:32px;display:flex;justify-content:center;align-items:flex-start}.diagram-wrap svg{display:block;max-width:none!important;flex-shrink:0;height:auto;overflow:visible;transition:width .12s ease}.diagram-wrap [data-map-bound]{cursor:pointer}.diagram-wrap .map-highlight>rect,.diagram-wrap .map-highlight>polygon,.diagram-wrap .map-highlight>circle,.diagram-wrap .map-highlight>path,.diagram-wrap rect.map-highlight{stroke:#ed8734!important;stroke-width:3px!important;filter:drop-shadow(0 1px 3px #f3a94d55)}.diagram-wrap text.map-highlight{fill:#af601e!important;font-weight:750!important}.diagram-wrap .map-highlight .nodeLabel{color:#9d5a20!important}.diagram-wrap .map-highlight{scroll-margin:50px}.diagram-wrap .render-error{font:12px/1.7 var(--mono);white-space:pre-wrap;color:var(--red);max-width:700px;background:#fff4f3;border:1px solid #f3d5d2;border-radius:9px;padding:18px}.loading{color:var(--muted);font-size:12px;padding:50px}
+    .canvas-caption{gap:12px;flex-wrap:wrap;justify-content:space-between;padding:8px 13px;font-size:10px;color:var(--muted);border-top:1px solid var(--line);background:#fff}.legend{display:flex;gap:10px;flex-wrap:wrap}.legend-item{display:flex;gap:4px;align-items:center}.legend-dot{height:6px;width:6px;border-radius:2px;background:var(--status-color)}.selection-label{max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .source-view{border-top:1px solid var(--line);font-size:10px;background:#fff}.source-view summary{padding:7px 14px;color:var(--muted);cursor:pointer;list-style-position:inside}.source-view pre{margin:0;max-height:180px;overflow:auto;padding:12px 16px;background:#f8fafc;border-top:1px solid var(--line);font:11px/1.6 var(--mono);color:#596d87;white-space:pre;tab-size:2}
+    .docs-heading{padding-bottom:10px}.doc-filters{display:flex;gap:4px;overflow:auto;flex-shrink:0;padding:0 13px 12px;border-bottom:1px solid var(--line);scrollbar-width:thin}.filter-button{font-size:10px;border:1px solid transparent;border-radius:6px;padding:3px 6px;white-space:nowrap;background:transparent;color:var(--muted)}.filter-button.is-active{color:var(--ink);background:#eef2f7;border-color:#e1e7ef}.filter-button:hover{background:#f3f5f8}.doc-scroll{flex:1;min-height:0;overflow:auto;padding:12px;scrollbar-width:thin;scrollbar-color:#dbe1ea transparent}.doc-card{border:1px solid var(--line);border-radius:10px;margin:0 0 10px;padding:13px;background:#fff;cursor:pointer;transition:border-color .15s,box-shadow .15s;scroll-margin:12px}.doc-card:hover{border-color:#bed1c4;box-shadow:0 3px 10px #28453708}.doc-card.is-active{border-color:#73b394;background:#fbfefb;box-shadow:0 0 0 2px #cae7d63a}.doc-heading{gap:8px;align-items:flex-start}.doc-heading h3{font-size:12px;line-height:1.65;margin:0;font-weight:700;overflow-wrap:anywhere}.card-arrow{font-size:12px;color:#a6b2c1;margin-left:auto;flex-shrink:0}.is-active .card-arrow{color:var(--accent)}.doc-meta{gap:6px;margin-top:8px;align-items:flex-start}.badge{border:1px solid color-mix(in srgb,var(--status-color,#94a0b0),transparent 72%);color:var(--status-color,#94a0b0);background:color-mix(in srgb,var(--status-color,#94a0b0),transparent 94%);font-size:9px;white-space:nowrap;border-radius:4px;padding:0 4px;line-height:1.7}.doc-file{font:9px/1.65 var(--mono);color:#8692a4;overflow-wrap:anywhere}.doc-summary{font-size:11px;line-height:1.9;margin:10px 0 8px;color:#4b5b70;white-space:pre-wrap}.doc-details{margin:0;padding-left:15px;color:#647286;font-size:10px;line-height:1.9}.doc-details li{padding-left:1px;margin-top:5px;white-space:pre-wrap}.doc-footer{padding:8px 14px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+    .link-layer{position:absolute;inset:0;width:100%;height:100%;z-index:4;pointer-events:none;overflow:visible}.link-path{stroke:#e2a365;stroke-width:1.35;fill:none;opacity:.7}.link-dot{fill:#e0a36a;stroke:#fff;stroke-width:2}.status-message{padding:0 22px 12px;font-size:11px;color:var(--red)}
+    @media(min-width:1700px){.workspace{grid-template-columns:290px minmax(320px,1fr) 360px}.doc-summary{font-size:12px}.doc-details{font-size:11px}}
+    @media(max-width:1250px){.workspace{grid-template-columns:225px minmax(300px,1fr) 275px;gap:10px;padding:14px}.tree-row{font-size:10px}.header-actions{gap:15px}.stats{gap:12px}.header-main{gap:12px}.panel-heading{padding-left:13px;padding-right:13px}.doc-scroll{padding:9px}.doc-card{padding:11px}.tab{padding-left:7px;padding-right:7px}.zoom-tools{gap:2px}.zoom-label{width:32px}}
+    @media(max-width:1050px){.workspace{grid-template-columns:220px minmax(0,1fr);height:auto;min-height:0}.tree-panel{height:660px}.diagram-panel{height:660px}.docs-panel{grid-column:1/-1;max-height:450px}.doc-scroll{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:start}.doc-card{margin-bottom:0}.link-layer{display:none}.stats{display:none}.header-main{align-items:flex-start}h1{font-size:23px}}
+    @media(max-width:650px){.page-header{padding:18px 16px}.brand-row{margin-bottom:12px;gap:7px}.scenario{font-size:9px;padding:2px 7px}#project{font-size:10px;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.header-main{display:block}h1{font-size:21px}#subtitle{font-size:11px}.header-actions{margin-top:13px}.button-primary{padding:7px 12px;font-size:11px}.workspace{display:flex;flex-direction:column;padding:10px;gap:10px}.tree-panel{height:280px}.diagram-panel{height:630px}.docs-panel{max-height:600px}.doc-scroll{display:block}.doc-card{margin-bottom:10px}.panel-heading{padding-top:12px}.tree-row{font-size:11px}.diagram-toolbar{padding-left:6px;padding-right:6px}.tab{font-size:10px;padding-left:5px;padding-right:5px}.tab-icon{margin-right:3px}.zoom-tools{gap:2px}.zoom-button{width:24px;height:25px}.zoom-fit{width:auto}.zoom-label{width:32px;font-size:9px}.diagram-wrap{padding:20px}.tour-panel{padding:11px 13px}.tour-panel p{font-size:11px}.canvas-caption{gap:7px}.tour-controls .keyboard-note{display:none}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+    @media print{body{background:#fff}.page-header{padding:10px}.header-actions,.tree-panel,.link-layer,.tree-tools,.tour-panel,.tour-rail,.zoom-tools{display:none}.workspace{display:block;height:auto;padding:8px;min-height:0}.diagram-panel{height:auto;overflow:visible}.map-viewport{overflow:visible;background:none}.diagram-wrap{width:100%;padding:15px;break-inside:avoid;display:block!important}.diagram-wrap svg{max-width:100%!important;height:auto!important}.docs-panel{max-height:none;margin-top:14px}.doc-scroll{overflow:visible;display:block}.doc-card{break-inside:avoid}.source-view{display:none}.tabs{display:none}.doc-filters,.doc-footer{display:none}}
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <div class="brand-row"><span class="brand-icon" aria-hidden="true">⌘</span><span class="brand-name">CODE MAP</span><span class="brand-sep"></span><span id="project"></span><span class="scenario" id="scenario"></span></div>
+    <div class="header-main">
+      <div class="title-group"><h1 id="map-title">代码地图</h1><p id="subtitle"></p></div>
+      <div class="header-actions"><div class="stats" id="stats"></div><button class="button button-primary" id="tour-start">↗ 跟着流程走</button></div>
+    </div>
+  </header>
+  <main class="workspace" id="workspace">
+    <section class="panel tree-panel" aria-label="工程树">
+      <div class="panel-heading"><div><div class="eyebrow">EXPLORE</div><h2>工程目录</h2></div><span class="counter" id="tree-count"></span></div>
+      <div class="search-wrap"><span class="search-icon" aria-hidden="true">⌕</span><input id="tree-search" type="search" placeholder="搜索类、接口或方法…" aria-label="搜索工程树" autocomplete="off"></div>
+      <div class="tree-tools"><button class="text-button" id="expand-all">展开全部</button><span aria-hidden="true" style="color:#d9e1eb">/</span><button class="text-button" id="collapse-all">折叠全部</button></div>
+      <div class="tree-scroll" id="tree-scroll"><div id="tree"></div><div class="empty-message" id="tree-empty" hidden>没有找到匹配的节点</div></div>
+      <div class="tree-footer"><span class="tiny-dot"></span>点击节点，联动图表与说明卡</div>
+    </section>
+    <section class="panel diagram-panel" aria-label="代码图表">
+      <div class="diagram-toolbar"><div class="tabs" id="tabs" role="tablist" aria-label="图表类型"></div><div class="zoom-tools" aria-label="图表缩放"><button class="zoom-button zoom-fit" id="zoom-fit" title="适配宽度">适配</button><button class="zoom-button" id="zoom-out" aria-label="缩小图表">−</button><span class="zoom-label" id="zoom-label">100%</span><button class="zoom-button" id="zoom-in" aria-label="放大图表">＋</button></div></div>
+      <nav class="tour-rail" id="tour-rail" aria-label="主线导览"><span class="rail-caption">主线</span></nav>
+      <section class="tour-panel" id="tour-panel" aria-label="当前导览" hidden><div class="tour-heading"><span class="tour-position" id="tour-position"></span><button class="text-button" id="tour-close" aria-label="关闭导览">关闭 ×</button></div><h3 id="tour-title"></h3><p id="tour-text"></p><div class="tour-controls"><button class="button" id="tour-prev">← 上一站</button><button class="button" id="tour-next">下一站 →</button><span class="keyboard-note">← → 切站 · Esc 退出</span></div></section>
+      <div class="map-viewport" id="map-viewport"><div class="loading" id="loading">正在绘制代码地图…</div><div id="diagrams"></div></div>
+      <div class="canvas-caption"><div class="legend"><span class="legend-item status-new"><i class="legend-dot"></i>核心 / 新增</span><span class="legend-item status-reused"><i class="legend-dot"></i>复用</span><span class="legend-item status-external"><i class="legend-dot"></i>外部</span><span class="legend-item status-warning"><i class="legend-dot"></i>分支</span><span class="legend-item status-error"><i class="legend-dot"></i>异常</span></div><span class="selection-label" id="selection-label">自由探索：从任意一栏开始</span><button class="text-button" id="clear-selection">清除联动</button></div>
+      <details class="source-view"><summary>查看当前图的 Mermaid 源码</summary><pre><code id="diagram-source"></code></pre></details>
+    </section>
+    <section class="panel docs-panel" aria-label="节点说明">
+      <div class="panel-heading docs-heading"><div><div class="eyebrow">UNDERSTAND</div><h2>节点说明</h2></div><span class="counter" id="doc-count"></span></div>
+      <div class="doc-filters" id="doc-filters" aria-label="说明卡筛选"></div>
+      <div class="doc-scroll" id="docs"></div><div class="doc-footer">沿主线理解全貌，点击卡片深入探索</div>
+    </section>
+    <svg class="link-layer" id="link-layer" aria-hidden="true"></svg>
+  </main>
+  <div class="status-message" id="status-message" role="status"></div>
+  <script id="map-data" type="application/json">__MAP_DATA__</script>
+  <!-- MERMAID_BUNDLE -->
+  <script>
+  (async function () {
+    'use strict';
+    const report = window.__CODE_MAP__ = { ready: false, errors: [], missingAnchors: [] };
+    const $ = id => document.getElementById(id);
+    const statusNames = { new: '新增', modified: '调整', reused: '复用', external: '外部', warning: '分支', error: '异常' };
+    const scenarioNames = { S1: '教学章节', S2: '迭代对比', S3: '需求蓝图', S4: 'PR 讲解', S5: '架构入门' };
+    const icons = { module: '▦', package: '▱', class: 'C', interface: 'I', method: 'm' };
+    const diagramIcons = { overview: '▧', sequence: '⇄', flow: '⑂' };
+    const colors = { new: ['#e7f6ed','#279464'], modified: ['#fff4e1','#c58a2c'], reused: ['#f2f4f7','#9aa6b7'], external: ['#ecf2fe','#4e7bc6'], warning: ['#fff4e1','#c58a2c'], error: ['#fdeef0','#d7555d'] };
+    let data;
+    try { data = JSON.parse($('map-data').textContent); }
+    catch (error) { report.errors.push('地图 JSON 无法解析：' + error.message); $('loading').textContent = report.errors[0]; report.ready = true; return; }
+    const diagrams = new Map(), entries = new Map(), cards = new Map(), anchorElements = new Map();
+    let activeDiagram = data.diagrams[0]?.id, selectedId = null, tourIndex = -1, docFilter = 'all', drawRequested = false;
+    const expanded = new Set(), flat = [];
+    function el(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text != null) node.textContent = text;
+      return node;
+    }
+    const normalize = text => String(text || '').replace(/\s+/g, ' ').trim();
+    function addError(message) { report.errors.push(message); $('status-message').textContent = report.errors.join(' · '); }
+    function complete() { report.ready = true; document.documentElement.dataset.mapReady = 'true'; }
+    try {
+      document.title = data.title + ' · Code Map';
+      $('map-title').textContent = data.title;
+      $('subtitle').textContent = data.subtitle || '';
+      $('project').textContent = data.project;
+      $('scenario').textContent = (data.scenario || 'S5') + ' · ' + (scenarioNames[data.scenario] || '代码地图');
+      (data.stats || []).forEach(stat => {
+        const item = el('div', 'stat'); item.append(el('span', 'stat-value', stat.value), el('span', 'stat-label', stat.label)); $('stats').append(item);
+      });
+      function buildTree(list, parent, depth) {
+        const fragment = document.createDocumentFragment();
+        list.forEach(item => {
+          const outer = el('div', 'tree-item'), line = el('div', 'tree-line');
+          line.style.paddingLeft = Math.max(0, depth) * 13 + 'px';
+          const hasChildren = Boolean(item.children?.length), toggle = el('button', 'tree-toggle' + (hasChildren ? ' open' : ' empty'), '›');
+          toggle.type = 'button'; toggle.setAttribute('aria-label', '折叠 ' + item.name); toggle.setAttribute('aria-expanded', String(hasChildren));
+          toggle.disabled = !hasChildren;
+          const row = el('button', 'tree-row' + (item.status ? ' status-' + item.status : ''));
+          row.type = 'button'; row.dataset.treeId = item.id; row.title = item.name;
+          row.append(el('span', 'kind-icon ' + item.kind, icons[item.kind] || '·'), el('span', 'tree-name', item.name));
+          if (item.status) { const dot = el('span', 'status-dot'); dot.title = statusNames[item.status] || item.status; row.append(dot); }
+          const childBox = el('div', 'tree-children');
+          line.append(toggle, row); outer.append(line, childBox);
+          entries.set(item.id, { item, parent, outer, row, toggle, childBox }); flat.push(item);
+          if (hasChildren) { expanded.add(item.id); childBox.append(buildTree(item.children, item.id, depth + 1)); }
+          toggle.addEventListener('click', () => {
+            if (expanded.has(item.id)) expanded.delete(item.id); else expanded.add(item.id);
+            filterTree(); requestLinks();
+          });
+          row.addEventListener('click', () => {
+            if (!item.anchors?.length && hasChildren) {
+              if (expanded.has(item.id)) expanded.delete(item.id); else expanded.add(item.id);
+              filterTree();
+            }
+            selectNode(item.id);
+          });
+          fragment.append(outer);
+        });
+        return fragment;
+      }
+      $('tree').append(buildTree(data.tree || [], null, 0));
+      $('tree-count').textContent = flat.length + ' 节点';
+      function filterTree() {
+        const query = normalize($('tree-search').value).toLowerCase();
+        function visit(item) {
+          const entry = entries.get(item.id);
+          const childMatches = (item.children || []).map(visit).some(Boolean);
+          const ownMatch = !query || (item.name + ' ' + item.id).toLowerCase().includes(query);
+          const visible = ownMatch || childMatches;
+          entry.outer.hidden = !visible;
+          const open = query ? childMatches : expanded.has(item.id);
+          entry.childBox.hidden = !open; entry.toggle.classList.toggle('open', open);
+          entry.toggle.setAttribute('aria-expanded', String(open));
+          entry.toggle.setAttribute('aria-label', (open ? '折叠 ' : '展开 ') + item.name);
+          return visible;
+        }
+        const any = (data.tree || []).map(visit).some(Boolean);
+        $('tree-empty').hidden = any; requestLinks();
+      }
+      $('tree-search').addEventListener('input', filterTree);
+      $('expand-all').addEventListener('click', () => { flat.forEach(item => expanded.add(item.id)); filterTree(); });
+      $('collapse-all').addEventListener('click', () => { expanded.clear(); filterTree(); });
+      function setDocFilter(value) {
+        docFilter = value;
+        cards.forEach((card, id) => { const doc = (data.docs || []).find(item => item.id === id); card.hidden = value !== 'all' && doc.status !== value; });
+        $('doc-filters').querySelectorAll('button').forEach(button => { const active = button.dataset.filter === value; button.classList.toggle('is-active', active); button.setAttribute('aria-pressed', String(active)); });
+        requestLinks();
+      }
+      const statuses = [...new Set((data.docs || []).map(doc => doc.status).filter(Boolean))];
+      ['all', ...statuses].forEach(status => {
+        const button = el('button', 'filter-button', status === 'all' ? '全部' : statusNames[status] || status);
+        button.dataset.filter = status; button.type = 'button'; button.addEventListener('click', () => setDocFilter(status)); $('doc-filters').append(button);
+      });
+      (data.docs || []).forEach(doc => {
+        const card = el('article', 'doc-card' + (doc.status ? ' status-' + doc.status : ''));
+        card.dataset.docId = doc.id; card.tabIndex = 0; card.setAttribute('role', 'button'); card.setAttribute('aria-label', '定位：' + doc.title);
+        const heading = el('div', 'doc-heading'); heading.append(el('h3', '', doc.title), el('span', 'card-arrow', '↗')); card.append(heading);
+        if (doc.file || doc.status) {
+          const meta = el('div', 'doc-meta');
+          if (doc.status) meta.append(el('span', 'badge', statusNames[doc.status] || doc.status));
+          if (doc.file) meta.append(el('span', 'doc-file', doc.file));
+          card.append(meta);
+        }
+        card.append(el('p', 'doc-summary', doc.summary));
+        if (doc.details?.length) { const list = el('ul', 'doc-details'); doc.details.forEach(detail => list.append(el('li', '', detail))); card.append(list); }
+        const activate = () => { const item = flat.find(node => node.id === selectedId && node.docId === doc.id) || flat.find(node => node.docId === doc.id); if (item) selectNode(item.id); };
+        card.addEventListener('click', activate); card.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); activate(); } });
+        cards.set(doc.id, card); $('docs').append(card);
+      });
+      $('doc-count').textContent = cards.size + ' 卡片';
+      if (!cards.size) $('docs').append(el('div', 'empty-message', '这张地图尚未添加说明卡'));
+      setDocFilter('all');
+      (data.diagrams || []).forEach(diagram => {
+        const button = el('button', 'tab'); button.type = 'button'; button.dataset.tab = diagram.id;
+        button.setAttribute('role', 'tab'); button.setAttribute('aria-controls', 'diagram-' + diagram.id); button.id = 'tab-' + diagram.id;
+        button.append(el('span', 'tab-icon', diagramIcons[diagram.id] || '▧'), document.createTextNode(diagram.title));
+        button.addEventListener('click', () => activateDiagram(diagram.id)); $('tabs').append(button);
+        const wrap = el('div', 'diagram-wrap'); wrap.dataset.diagramId = diagram.id; wrap.id = 'diagram-' + diagram.id;
+        wrap.setAttribute('role', 'tabpanel'); wrap.setAttribute('aria-labelledby', button.id); wrap.hidden = diagram.id !== activeDiagram;
+        $('diagrams').append(wrap); diagrams.set(diagram.id, { data: diagram, button, wrap, svg: null, width: 800, height: 500, zoom: 1 });
+      });
+      function activateDiagram(id, resetScroll = true) {
+        if (!diagrams.has(id)) return;
+        activeDiagram = id;
+        diagrams.forEach((diagram, key) => { const active = key === id; diagram.wrap.hidden = !active; diagram.button.classList.toggle('is-active', active); diagram.button.setAttribute('aria-selected', String(active)); diagram.button.tabIndex = active ? 0 : -1; });
+        $('diagram-source').textContent = diagrams.get(id).data.source;
+        applyZoom(id);
+        if (resetScroll) { $('map-viewport').scrollTop = 0; $('map-viewport').scrollLeft = 0; }
+        requestLinks();
+      }
+      $('tabs').addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+        event.preventDefault(); const ids = [...diagrams.keys()], next = (ids.indexOf(activeDiagram) + (event.key === 'ArrowRight' ? 1 : -1) + ids.length) % ids.length;
+        activateDiagram(ids[next]); diagrams.get(ids[next]).button.focus();
+      });
+      function applyZoom(id) {
+        const diagram = diagrams.get(id); if (!diagram) return;
+        if (diagram.svg) { diagram.svg.style.width = diagram.width * diagram.zoom + 'px'; diagram.svg.style.height = diagram.height * diagram.zoom + 'px'; }
+        if (id === activeDiagram) $('zoom-label').textContent = Math.round(diagram.zoom * 100) + '%';
+        requestLinks();
+      }
+      function fitDiagram(id = activeDiagram) {
+        const diagram = diagrams.get(id); if (!diagram?.svg) return;
+        const padding = window.innerWidth <= 650 ? 40 : 64;
+        diagram.zoom = Math.min(1.15, Math.max(.08, ($('map-viewport').clientWidth - padding) / diagram.width)); applyZoom(id);
+      }
+      function zoomBy(multiplier) { const diagram = diagrams.get(activeDiagram); if (!diagram) return; diagram.zoom = Math.min(4, Math.max(.08, diagram.zoom * multiplier)); applyZoom(activeDiagram); }
+      $('zoom-in').addEventListener('click', () => zoomBy(1.2)); $('zoom-out').addEventListener('click', () => zoomBy(1 / 1.2)); $('zoom-fit').addEventListener('click', () => fitDiagram());
+      function anchorKey(item, index) { return item.id + ':' + index; }
+      function findAnchor(diagram, anchor) {
+        const svg = diagram.svg; if (!svg) return [];
+        const matches = [], add = node => { if (node && !matches.includes(node)) matches.push(node); };
+        const escaped = anchor.node.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const nodeId = new RegExp('^flowchart-' + escaped + '-\\d+$');
+        svg.querySelectorAll('g.node').forEach(group => { if (group.getAttribute('data-id') === anchor.node || group.id === anchor.node || nodeId.test(group.id)) add(group); });
+        svg.querySelectorAll('g.actor').forEach(group => { if (group.getAttribute('name') === anchor.node || group.id === anchor.node || (anchor.label && normalize(group.textContent) === normalize(anchor.label))) add(group); });
+        svg.querySelectorAll('rect.actor').forEach(rect => { if (rect.getAttribute('name') === anchor.node || rect.id === anchor.node) add(rect); });
+        if (!matches.length && anchor.label) {
+          svg.querySelectorAll('g.node').forEach(group => { if (normalize(group.textContent) === normalize(anchor.label)) add(group); });
+        }
+        if (anchor.label) {
+          svg.querySelectorAll('text.actor').forEach(text => { if (normalize(text.textContent) === normalize(anchor.label)) { const group = text.closest('g.actor'); add(group || text); } });
+        }
+        return matches;
+      }
+      function bindAnchors() {
+        flat.forEach(item => (item.anchors || []).forEach((anchor, index) => {
+          const diagram = diagrams.get(anchor.diagram), matches = diagram ? findAnchor(diagram, anchor) : [];
+          anchorElements.set(anchorKey(item, index), matches);
+          if (!matches.length) report.missingAnchors.push({ treeId: item.id, diagram: anchor.diagram, node: anchor.node, label: anchor.label || '' });
+          matches.forEach(node => {
+            if (node.matches('rect.actor') && colors[item.status]) { node.style.fill = colors[item.status][0]; node.style.stroke = colors[item.status][1]; }
+            if (node.dataset.mapBound) return;
+            node.dataset.mapBound = item.id; node.setAttribute('tabindex', '0'); node.setAttribute('role', 'button'); node.setAttribute('aria-label', '定位：' + item.name);
+            node.addEventListener('click', event => { event.stopPropagation(); selectNode(item.id, anchor.diagram); });
+            node.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); selectNode(item.id, anchor.diagram); } });
+          });
+        }));
+      }
+      function scrollWithin(container, target) {
+        if (!target || target.hidden) return;
+        const a = container.getBoundingClientRect(), b = target.getBoundingClientRect();
+        if (b.top < a.top + 12) container.scrollTop -= a.top + 12 - b.top;
+        else if (b.bottom > a.bottom - 12) container.scrollTop += b.bottom - a.bottom + 12;
+      }
+      function revealEntry(id) {
+        let entry = entries.get(id);
+        while (entry?.parent) { expanded.add(entry.parent); entry = entries.get(entry.parent); }
+        if ($('tree-search').value) $('tree-search').value = '';
+        filterTree();
+      }
+      function selectedTargets(item, diagramId) {
+        const result = []; (item.anchors || []).forEach((anchor, index) => { if (anchor.diagram === diagramId) result.push(...(anchorElements.get(anchorKey(item, index)) || [])); }); return [...new Set(result)];
+      }
+      function selectNode(id, preferredDiagram) {
+        const entry = entries.get(id); if (!entry) return;
+        selectedId = id; revealEntry(id);
+        document.querySelectorAll('.tree-row.is-active,.doc-card.is-active,.map-highlight').forEach(node => node.classList.remove('is-active', 'map-highlight'));
+        entry.row.classList.add('is-active'); entry.row.setAttribute('aria-pressed', 'true');
+        entries.forEach(other => { if (other !== entry) other.row.setAttribute('aria-pressed', 'false'); });
+        const card = cards.get(entry.item.docId);
+        if (card) { if (card.hidden) setDocFilter('all'); card.classList.add('is-active'); scrollWithin($('docs'), card); }
+        const available = entry.item.anchors || [];
+        const targetDiagram = preferredDiagram || (available.some(anchor => anchor.diagram === activeDiagram) ? activeDiagram : available[0]?.diagram);
+        if (targetDiagram && targetDiagram !== activeDiagram) activateDiagram(targetDiagram);
+        diagrams.forEach((diagram, diagramId) => selectedTargets(entry.item, diagramId).forEach(node => node.classList.add('map-highlight')));
+        $('selection-label').textContent = entry.item.name;
+        scrollWithin($('tree-scroll'), entry.row);
+        const first = selectedTargets(entry.item, activeDiagram)[0];
+        if (first) {
+          const viewport = $('map-viewport'), a = viewport.getBoundingClientRect(), b = first.getBoundingClientRect();
+          if (b.left < a.left + 20 || b.right > a.right - 20) viewport.scrollLeft += (b.left + b.right - a.left - a.right) / 2;
+          if (b.top < a.top + 20 || b.bottom > a.bottom - 20) viewport.scrollTop += (b.top + b.bottom - a.top - a.bottom) / 2;
+        }
+        requestLinks();
+      }
+      function clearSelection() {
+        selectedId = null;
+        document.querySelectorAll('.tree-row.is-active,.doc-card.is-active,.map-highlight').forEach(node => node.classList.remove('is-active', 'map-highlight'));
+        entries.forEach(entry => entry.row.setAttribute('aria-pressed', 'false'));
+        $('selection-label').textContent = '自由探索：从任意一栏开始'; requestLinks();
+      }
+      $('clear-selection').addEventListener('click', clearSelection);
+      function requestLinks() { if (drawRequested) return; drawRequested = true; requestAnimationFrame(() => { drawRequested = false; drawLinks(); }); }
+      function drawLinks() {
+        const layer = $('link-layer'); layer.replaceChildren();
+        if (!selectedId || window.innerWidth <= 1050) return;
+        const entry = entries.get(selectedId), target = selectedTargets(entry.item, activeDiagram)[0], card = cards.get(entry.item.docId);
+        if (!target) return;
+        const base = $('workspace').getBoundingClientRect(), viewport = $('map-viewport').getBoundingClientRect();
+        const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+        const point = (node, side, limit) => { const rect = node.getBoundingClientRect(); return { x: clamp(side === 'left' ? rect.left : side === 'right' ? rect.right : (rect.left + rect.right) / 2, limit?.left ?? -Infinity, limit?.right ?? Infinity) - base.left, y: clamp((rect.top + rect.bottom) / 2, limit?.top ?? -Infinity, limit?.bottom ?? Infinity) - base.top }; };
+        const treeRect = $('tree-scroll').getBoundingClientRect(), docsRect = $('docs').getBoundingClientRect();
+        const a = point(entry.row, 'right', treeRect), b = point(target, 'left', viewport), c = point(target, 'right', viewport);
+        function path(from, to) {
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'path'), distance = Math.max(28, Math.abs(to.x - from.x) * .44);
+          line.setAttribute('class', 'link-path'); line.setAttribute('d', `M${from.x},${from.y} C${from.x + distance},${from.y} ${to.x - distance},${to.y} ${to.x},${to.y}`); layer.append(line);
+          [from, to].forEach(p => { const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle'); dot.setAttribute('class', 'link-dot'); dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); dot.setAttribute('r', '3.1'); layer.append(dot); });
+        }
+        path(a, b); if (card && !card.hidden) path(c, point(card, 'left', docsRect));
+      }
+      (data.tour || []).forEach((step, index) => {
+        const button = el('button', 'tour-step'); button.type = 'button'; button.dataset.tourStep = index;
+        button.append(el('span', 'step-number', index + 1), document.createTextNode(step.title)); button.addEventListener('click', () => goTour(index)); $('tour-rail').append(button);
+      });
+      if (!data.tour?.length) { $('tour-rail').hidden = true; $('tour-start').disabled = true; }
+      function goTour(index) {
+        const steps = data.tour || []; if (index < 0 || index >= steps.length) return;
+        tourIndex = index; const step = steps[index];
+        $('tour-panel').hidden = false; $('tour-position').textContent = 'GUIDED TOUR  /  ' + (index + 1) + ' — ' + steps.length;
+        $('tour-title').textContent = step.title; $('tour-text').textContent = step.text;
+        $('tour-prev').disabled = index === 0; $('tour-next').disabled = index === steps.length - 1;
+        $('tour-rail').querySelectorAll('[data-tour-step]').forEach(button => { const active = Number(button.dataset.tourStep) === index; button.classList.toggle('is-active', active); button.setAttribute('aria-current', active ? 'step' : 'false'); });
+        activateDiagram(step.diagram); if (step.treeId) selectNode(step.treeId, step.diagram); else clearSelection();
+        const railButton = $('tour-rail').querySelector('[data-tour-step="' + index + '"]');
+        if (railButton) { const rect = railButton.getBoundingClientRect(), rail = $('tour-rail').getBoundingClientRect(); if (rect.right > rail.right || rect.left < rail.left) $('tour-rail').scrollLeft += rect.left - rail.left - 30; }
+        requestLinks();
+      }
+      function closeTour() { $('tour-panel').hidden = true; tourIndex = -1; $('tour-rail').querySelectorAll('.is-active').forEach(button => { button.classList.remove('is-active'); button.setAttribute('aria-current', 'false'); }); requestLinks(); }
+      $('tour-start').addEventListener('click', () => goTour(0)); $('tour-prev').addEventListener('click', () => goTour(tourIndex - 1)); $('tour-next').addEventListener('click', () => goTour(tourIndex + 1)); $('tour-close').addEventListener('click', closeTour);
+      document.addEventListener('keydown', event => {
+        if (event.target.matches('input,textarea,[contenteditable="true"]')) return;
+        if (event.key === 'Escape') { closeTour(); clearSelection(); }
+        if (tourIndex >= 0 && !event.target.closest('[role="tablist"]')) {
+          if (event.key === 'ArrowRight') { event.preventDefault(); goTour(tourIndex + 1); }
+          if (event.key === 'ArrowLeft') { event.preventDefault(); goTour(tourIndex - 1); }
+        }
+      });
+      ['tree-scroll','docs','map-viewport','tour-rail'].forEach(id => $(id).addEventListener('scroll', requestLinks, { passive: true }));
+      window.addEventListener('resize', requestLinks);
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(requestLinks).observe($('workspace'));
+      filterTree(); activateDiagram(activeDiagram);
+      if (!window.mermaid) throw new Error('Mermaid 引擎未加载，请用 build-map.mjs 生成完整 HTML。');
+      window.mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'base', fontFamily: '"PingFang SC", "Microsoft YaHei", system-ui, sans-serif', themeVariables: { primaryColor: '#eaf5ee', primaryTextColor: '#304d3d', primaryBorderColor: '#76aa8c', lineColor: '#91a0b6', secondaryColor: '#f3f6fa', tertiaryColor: '#f6f8fc', fontSize: '14px', actorBkg: '#edf3fa', actorBorder: '#8ca7c5', actorTextColor: '#314764', signalColor: '#7e8fa6', noteBkgColor: '#fff7e4', noteBorderColor: '#d9bc7d' }, flowchart: { htmlLabels: false, useMaxWidth: false, nodeSpacing: 32, rankSpacing: 50, curve: 'basis' }, sequence: { useMaxWidth: false, mirrorActors: true, actorMargin: 45, boxMargin: 12, messageMargin: 35 } });
+      for (const [id, diagram] of diagrams) {
+        try {
+          const result = await window.mermaid.render('map-svg-' + id, diagram.data.source);
+          diagram.wrap.innerHTML = result.svg;
+          if (result.bindFunctions) result.bindFunctions(diagram.wrap);
+          const svg = diagram.svg = diagram.wrap.querySelector('svg');
+          if (!svg) throw new Error('图中没有生成 SVG');
+          const viewBox = svg.viewBox.baseVal;
+          diagram.width = viewBox.width || Number.parseFloat(svg.getAttribute('width')) || 800;
+          diagram.height = viewBox.height || Number.parseFloat(svg.getAttribute('height')) || 500;
+          svg.setAttribute('aria-label', diagram.data.title); fitDiagram(id);
+        } catch (error) {
+          addError(diagram.data.title + ' 渲染失败：' + (error.message || String(error)));
+          diagram.wrap.replaceChildren(el('div', 'render-error', report.errors.at(-1)));
+        }
+      }
+      $('loading').hidden = true; bindAnchors(); activateDiagram(activeDiagram, false);
+      if (report.missingAnchors.length) $('status-message').textContent = '有 ' + report.missingAnchors.length + ' 个锚点未能定位到图节点，请检查地图数据。';
+      requestLinks(); complete();
+    } catch (error) { addError(error.message || String(error)); $('loading').textContent = '地图暂时无法显示：' + (error.message || String(error)); complete(); }
+  })();
+  </script>
+</body>
+</html>

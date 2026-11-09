@@ -1,0 +1,21 @@
+{
+  "name": "coding-map-skill",
+  "version": "1.0.0",
+  "description": "Agent skill for interactive, offline code maps",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": {
+    "vendor": "node scripts/bundle-mermaid.mjs",
+    "build": "node scripts/build-examples.mjs",
+    "test": "node --test tests/unit/*.test.mjs",
+    "test:browser": "node tests/browser.test.mjs",
+    "check": "npm test && npm run build && npm run test:browser"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "mermaid": "12.3.0",
+    "playwright": "1.65.0"
+  }
+}

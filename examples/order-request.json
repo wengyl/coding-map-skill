@@ -1,0 +1,365 @@
+{
+  "schemaVersion": 1,
+  "title": "订单请求 · 代码导览",
+  "subtitle": "虚构教学示意 · 沿一次创建请求理解入口、领域校验、持久化与事件边界",
+  "project": "order-demo（虚构示意）",
+  "scenario": "S5",
+  "stats": [
+    {
+      "label": "节点说明",
+      "value": "7"
+    },
+    {
+      "label": "核心图",
+      "value": "3"
+    },
+    {
+      "label": "导览站",
+      "value": "8"
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "overview",
+      "title": "全景图",
+      "source": "flowchart LR\n  subgraph Entry[\"接口层\"]\n    API[\"OrderController\"]\n  end\n  subgraph Core[\"应用与领域\"]\n    Service[\"OrderService\"]\n    Order[\"Order\"]\n    Reject[\"OrderError\"]\n  end\n  subgraph Infra[\"基础设施\"]\n    Repo[\"OrderRepository\"]\n    DB[(\"MySQL\")]\n    Bus[\"EventBus\"]\n  end\n  API --> Service\n  Service --> Order\n  Order -->|约束失败| Reject\n  Service --> Repo\n  Repo --> DB\n  Service -->|提交后通知| Bus\n  classDef core fill:#e6f6ec,stroke:#17a45f,color:#0b5c3a\n  classDef reused fill:#f1f3f6,stroke:#9aa3af,color:#4b5563,stroke-dasharray:5 3\n  classDef external fill:#eaf1fe,stroke:#3574f0,color:#164494\n  classDef warning fill:#fff4e0,stroke:#e6a23c,color:#7c4a06\n  classDef error fill:#fdecec,stroke:#e5484d,color:#8f2028\n  class API,Service,Order core\n  class Repo reused\n  class DB,Bus external\n  class Reject error"
+    },
+    {
+      "id": "sequence",
+      "title": "时序图",
+      "source": "sequenceDiagram\n  autonumber\n  participant API as OrderController\n  participant Service as OrderService\n  participant Order as Order\n  participant Repo as OrderRepository\n  participant DB as MySQL\n  participant Bus as EventBus\n  API->>Service: createOrder(command)\n  Service->>Order: create + validate\n  alt 领域约束失败\n    Order-->>Service: OrderError\n    Service-->>API: 失败结果\n  else 通过校验\n    Order-->>Service: order\n    Service->>Repo: save(order)\n    Repo->>DB: 事务写入\n    DB-->>Repo: 提交成功\n    Repo-->>Service: orderId\n    Service->>Bus: publish(OrderCreated)\n    Bus-->>Service: accepted\n    Service-->>API: orderId\n  end"
+    },
+    {
+      "id": "flow",
+      "title": "流程图",
+      "source": "flowchart TB\n  HTTP[\"OrderController\"] --> Create[\"OrderService\"]\n  Create --> Domain[\"Order\"]\n  Domain --> Valid{\"领域约束满足?\"}\n  Valid -->|否| Reject[\"OrderError\"]\n  Valid -->|是| Save[\"OrderRepository\"]\n  Save --> Database[(\"MySQL\")]\n  Database --> Publish[\"EventBus\"]\n  Publish --> Ack{\"通知成功?\"}\n  Ack -->|是| Done[\"返回订单编号\"]\n  Ack -->|否| Gap[\"补偿与重试待设计\"]\n  Database -.->|事务失败| Reject\n  classDef core fill:#e6f6ec,stroke:#17a45f,color:#0b5c3a\n  classDef reused fill:#f1f3f6,stroke:#9aa3af,color:#4b5563,stroke-dasharray:5 3\n  classDef external fill:#eaf1fe,stroke:#3574f0,color:#164494\n  classDef warning fill:#fff4e0,stroke:#e6a23c,color:#7c4a06\n  classDef error fill:#fdecec,stroke:#e5484d,color:#8f2028\n  class HTTP,Create,Domain core\n  class Save reused\n  class Database,Publish external\n  class Gap warning\n  class Reject error"
+    }
+  ],
+  "tree": [
+    {
+      "id": "project",
+      "name": "order-demo（虚构示意）",
+      "kind": "module",
+      "children": [
+        {
+          "id": "entry",
+          "name": "接口层",
+          "kind": "package",
+          "children": [
+            {
+              "id": "controller",
+              "name": "OrderController",
+              "kind": "class",
+              "status": "new",
+              "docId": "controller-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "API",
+                  "label": "OrderController"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "API",
+                  "label": "OrderController"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "HTTP",
+                  "label": "OrderController"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "domain",
+          "name": "应用与领域",
+          "kind": "package",
+          "children": [
+            {
+              "id": "service",
+              "name": "OrderService",
+              "kind": "class",
+              "status": "new",
+              "docId": "service-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Service",
+                  "label": "OrderService"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Service",
+                  "label": "OrderService"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "Create",
+                  "label": "OrderService"
+                }
+              ]
+            },
+            {
+              "id": "order",
+              "name": "Order",
+              "kind": "class",
+              "status": "new",
+              "docId": "order-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Order",
+                  "label": "Order"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Order",
+                  "label": "Order"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "Domain",
+                  "label": "Order"
+                }
+              ]
+            },
+            {
+              "id": "error",
+              "name": "OrderError",
+              "kind": "class",
+              "status": "error",
+              "docId": "error-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Reject",
+                  "label": "OrderError"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "Reject",
+                  "label": "OrderError"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "infra",
+          "name": "基础设施",
+          "kind": "package",
+          "children": [
+            {
+              "id": "repository",
+              "name": "OrderRepository",
+              "kind": "interface",
+              "status": "reused",
+              "docId": "repository-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Repo",
+                  "label": "OrderRepository"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Repo",
+                  "label": "OrderRepository"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "Save",
+                  "label": "OrderRepository"
+                }
+              ]
+            },
+            {
+              "id": "database",
+              "name": "MySQL",
+              "kind": "class",
+              "status": "external",
+              "docId": "database-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "DB",
+                  "label": "MySQL"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "DB",
+                  "label": "MySQL"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "Database",
+                  "label": "MySQL"
+                }
+              ]
+            },
+            {
+              "id": "eventbus",
+              "name": "EventBus",
+              "kind": "interface",
+              "status": "external",
+              "docId": "eventbus-doc",
+              "anchors": [
+                {
+                  "diagram": "overview",
+                  "node": "Bus",
+                  "label": "EventBus"
+                },
+                {
+                  "diagram": "sequence",
+                  "node": "Bus",
+                  "label": "EventBus"
+                },
+                {
+                  "diagram": "flow",
+                  "node": "Publish",
+                  "label": "EventBus"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "docs": [
+    {
+      "id": "controller-doc",
+      "title": "OrderController · 请求入口",
+      "status": "new",
+      "file": "示意：src/api/OrderController.ts",
+      "summary": "将 HTTP 输入转换为创建命令，并把应用层结果转换为响应。",
+      "details": [
+        "本例是虚构教学示意，没有对应真实源码或可运行服务。",
+        "入口校验字段格式；领域约束交给 Order。",
+        "入门图中绿色表示本次讲解的核心模块，不表示真实提交新增。"
+      ]
+    },
+    {
+      "id": "service-doc",
+      "title": "OrderService · 编排用例",
+      "status": "new",
+      "file": "示意：src/application/OrderService.ts",
+      "summary": "组织领域校验、仓储持久化和提交后的事件通知。",
+      "details": [
+        "应用服务表达执行顺序，不把数据库语句放进领域对象。",
+        "示意链路先完成持久化，再发送事件。",
+        "这套简化顺序存在提交成功但事件发送失败的间隙；生产方案需要按可靠性需求设计补偿或 Outbox。"
+      ]
+    },
+    {
+      "id": "order-doc",
+      "title": "Order · 维护业务约束",
+      "status": "new",
+      "file": "示意：src/domain/Order.ts",
+      "summary": "构造有效订单，约束失败时返回领域错误。",
+      "details": [
+        "流程图中的判断代表领域校验，不对应具体实现方法。",
+        "金额、商品状态与库存策略需要由实际需求定义。",
+        "领域对象对存储和消息系统保持独立。"
+      ]
+    },
+    {
+      "id": "error-doc",
+      "title": "OrderError · 失败出口",
+      "status": "error",
+      "file": "示意：src/domain/OrderError.ts",
+      "summary": "让调用方区分领域拒绝、持久化失败与事件通知问题。",
+      "details": [
+        "领域拒绝发生在写入之前，不应留下半成品订单。",
+        "持久化事务失败应回滚，并映射为适当的错误响应。",
+        "示例未定义错误码和重试协议；真实地图应沿代码补齐这些边界。"
+      ]
+    },
+    {
+      "id": "repository-doc",
+      "title": "OrderRepository · 持久化端口",
+      "status": "reused",
+      "file": "示意：src/domain/OrderRepository.ts",
+      "summary": "将领域订单持久化，并向上返回提交结果。",
+      "details": [
+        "灰色表示基础设施抽象在这条讲解主线中作为复用背景。",
+        "单次 save 的事务边界应由具体实现明确。",
+        "示例不保证库存扣减与订单写入是同一个事务，真实系统需核查。"
+      ]
+    },
+    {
+      "id": "database-doc",
+      "title": "MySQL · 外部存储",
+      "status": "external",
+      "summary": "事务提交成功是本示例进入后续通知步骤的条件。",
+      "details": [
+        "蓝色表示本地图之外的系统依赖。",
+        "连接信息、表结构与约束在真实地图中应引用配置及迁移文件。",
+        "示例不包含数据库凭据或部署要求。"
+      ]
+    },
+    {
+      "id": "eventbus-doc",
+      "title": "EventBus · 提交后通知",
+      "status": "external",
+      "file": "示意：src/ports/EventBus.ts",
+      "summary": "把 OrderCreated 交给外部消息设施。",
+      "details": [
+        "发布成功不等于下游业务已完成。",
+        "消息投递和消费幂等需要在实际实现中核查。",
+        "流程图橙色分支明确标出本简化示例尚未解决的可靠性问题。"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "title": "1 · 先看全貌",
+      "text": "这是虚构订单服务的教学地图。绿色是核心阅读主线，灰色是复用背景，蓝色是外部依赖，红色是失败出口。",
+      "diagram": "overview"
+    },
+    {
+      "title": "2 · 请求进入",
+      "text": "从 OrderController 看输入与响应的边界，再沿箭头进入应用服务。",
+      "diagram": "sequence",
+      "treeId": "controller"
+    },
+    {
+      "title": "3 · 编排用例",
+      "text": "OrderService 决定调用顺序：领域校验通过后持久化，提交成功后再通知。",
+      "diagram": "sequence",
+      "treeId": "service"
+    },
+    {
+      "title": "4 · 领域校验",
+      "text": "Order 维护有效订单的约束。看流程图中的判断：拒绝分支在写入前结束。",
+      "diagram": "flow",
+      "treeId": "order"
+    },
+    {
+      "title": "5 · 持久化",
+      "text": "OrderRepository 隔离领域与数据库。这里要核查具体 save 的事务边界。",
+      "diagram": "sequence",
+      "treeId": "repository"
+    },
+    {
+      "title": "6 · 提交边界",
+      "text": "数据库事务成功后才能进入事件通知。真实系统还需核查并发更新和数据约束。",
+      "diagram": "flow",
+      "treeId": "database"
+    },
+    {
+      "title": "7 · 外部事件",
+      "text": "EventBus 只是通知边界。提交之后再发布会留下失败间隙，不能把这张简化图当作可靠消息方案。",
+      "diagram": "sequence",
+      "treeId": "eventbus"
+    },
+    {
+      "title": "8 · 回看失败路径",
+      "text": "确认领域拒绝、事务失败和通知失败分别如何处理。将示例换成真实代码时，要补齐错误码、补偿机制与验证依据。",
+      "diagram": "flow",
+      "treeId": "error"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+assets/vendor/** linguist-vendored -whitespace
+examples/*.html linguist-generated -whitespace
